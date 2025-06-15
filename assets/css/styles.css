@@ -1839,5 +1839,99 @@ body {
     #mario-canvas {
         display: none;
     }
+}
+
+/* Personal message styles for start screen */
+.dedication {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(255, 217, 61, 0.1), rgba(255, 107, 107, 0.1));
+    border-radius: 15px;
+    border: 2px solid rgba(255, 217, 61, 0.3);
+}
+
+.dedication-text {
+    font-size: 1.1rem;
+    color: #4ECDC4;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.dedication-signature {
+    font-size: 1rem;
+    color: #FF6B6B;
+    font-style: italic;
+    text-align: center;
+    margin: 0;
+}
+
+.start-hint {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.start-hint p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #cccccc;
+    text-align: center;
+}
+
+/* Personal message styles for victory screen */
+.personal-message {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(78, 205, 196, 0.15));
+    border-radius: 20px;
+    border: 3px solid rgba(255, 217, 61, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.heart-message h3 {
+    color: #FF6B6B;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+.love-note {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    border-left: 4px solid #4ECDC4;
+    font-style: italic;
+}
+
+.signature {
+    font-size: 1.2rem;
+    color: #FFD93D;
+    font-weight: bold;
+    text-align: center;
+    margin: 0;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* Enhanced mario character animation */
+.mario-character {
+    font-size: 4rem;
+    animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+    }
+    to {
+        text-shadow: 0 0 30px rgba(255, 217, 61, 0.8), 0 0 40px rgba(255, 107, 107, 0.3);
+    }
 } 
 } 

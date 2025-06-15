@@ -193,11 +193,14 @@ class MarioMiniGame {
                 );
                 break;
                 
-            case 7: // Late Teens - SUPER EASY final level! Only need 1 coin
+            case 7: // Late Teens - SUPER COOL FINAL LEVEL! 🎉
                 platforms.push(
-                    { x: 150, y: 400, width: 150, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 400, y: 350, width: 150, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 600, y: 300, width: 120, height: 25, color: '#D2691E', type: 'brick' }
+                    // Rainbow platforms for the final level!
+                    { x: 120, y: 400, width: 160, height: 30, color: '#FF6B6B', type: 'rainbow', glowColor: '#FF6B6B' },
+                    { x: 350, y: 350, width: 160, height: 30, color: '#4ECDC4', type: 'rainbow', glowColor: '#4ECDC4' },
+                    { x: 580, y: 300, width: 140, height: 30, color: '#45B7D1', type: 'rainbow', glowColor: '#45B7D1' },
+                    // Special victory platform
+                    { x: 300, y: 200, width: 200, height: 35, color: '#FFD93D', type: 'victory', glowColor: '#FFD93D' }
                 );
                 break;
         }
@@ -254,10 +257,14 @@ class MarioMiniGame {
                 );
                 break;
                 
-            case 7: // Late Teens - SUPER EASY! Only 1 coin needed  
-                coins.push(
-                    { x: 200, y: 370, width: 20, height: 20, collected: false }
-                );
+            case 7: // Late Teens - Final celebration coin! 🎉
+                coins.push({ 
+                    x: 400, y: 160, // On the victory platform
+                    width: 24, height: 24, // Bigger coin
+                    collected: false, 
+                    sparkle: true, // Special sparkle effect
+                    celebratory: true // Extra celebration when collected
+                });
                 break;
         }
         
@@ -542,7 +549,7 @@ class MarioMiniGame {
         const coinFrame = Math.floor(this.animationFrame / 8) % 4;
         for (let coin of this.coins) {
             if (!coin.collected) {
-                this.drawCoin(coin.x + coin.width/2, coin.y + coin.height/2, coinFrame);
+                this.drawCoin(coin.x + coin.width/2, coin.y + coin.height/2, coinFrame, coin);
             }
         }
         
@@ -675,35 +682,78 @@ class MarioMiniGame {
         this.ctx.fillRect(platform.x + platform.width - 6, platform.y + 4, 2, 2);
     }
     
-    drawCoin(x, y, frame) {
+    drawCoin(x, y, frame, coin = null) {
+        // Special effects for celebratory coin
+        const isCelebratory = coin && coin.celebratory;
+        const hasSparkle = coin && coin.sparkle;
+        
+        this.ctx.save();
+        
+        // Enhanced glow for special coins
+        if (isCelebratory || hasSparkle) {
+            this.ctx.shadowColor = '#FFD93D';
+            this.ctx.shadowBlur = 15;
+        }
+        
+        // Extra sparkle effects for special coins
+        if (hasSparkle) {
+            for (let i = 0; i < 4; i++) {
+                const sparkleAngle = (this.animationFrame * 0.2 + i * Math.PI/2) % (Math.PI * 2);
+                const sparkleX = x + Math.cos(sparkleAngle) * 20;
+                const sparkleY = y + Math.sin(sparkleAngle) * 20;
+                const sparkleSize = Math.sin(this.animationFrame * 0.3 + i) * 2 + 3;
+                
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.beginPath();
+                this.ctx.arc(sparkleX, sparkleY, sparkleSize, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+        
+        // Make celebratory coin bigger
+        const coinSize = isCelebratory ? 12 : 8;
+        const innerSize = isCelebratory ? 9 : 6;
+        
         // Classic Mario coin with rotation animation
-        this.ctx.fillStyle = '#FFD700';
+        this.ctx.fillStyle = isCelebratory ? '#FFD93D' : '#FFD700';
         
         if (frame === 0 || frame === 2) {
             // Full coin
             this.ctx.beginPath();
-            this.ctx.arc(x, y, 8, 0, Math.PI * 2);
+            this.ctx.arc(x, y, coinSize, 0, Math.PI * 2);
             this.ctx.fill();
             
             // Coin details
             this.ctx.fillStyle = '#FFA500';
             this.ctx.beginPath();
-            this.ctx.arc(x, y, 6, 0, Math.PI * 2);
+            this.ctx.arc(x, y, innerSize, 0, Math.PI * 2);
             this.ctx.fill();
             
             // Coin center
-            this.ctx.fillStyle = '#FFD700';
+            this.ctx.fillStyle = isCelebratory ? '#FFD93D' : '#FFD700';
             this.ctx.fillRect(x - 2, y - 4, 4, 8);
         } else {
             // Rotated coin (thinner)
-            this.ctx.fillRect(x - 2, y - 8, 4, 16);
+            const width = isCelebratory ? 6 : 4;
+            const height = isCelebratory ? 20 : 16;
+            this.ctx.fillRect(x - width/2, y - height/2, width, height);
             this.ctx.fillStyle = '#FFA500';
-            this.ctx.fillRect(x - 1, y - 6, 2, 12);
+            this.ctx.fillRect(x - (width-2)/2, y - (height-4)/2, width-2, height-4);
         }
         
-        // Coin sparkle
+        // Enhanced sparkle for special coins
         this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.fillRect(x - 3, y - 3, 1, 1);
+        if (isCelebratory) {
+            // Crown symbol for final coin
+            this.ctx.font = 'bold 16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('👑', x, y + 5);
+        } else {
+            // Regular sparkle
+            this.ctx.fillRect(x - 3, y - 3, 1, 1);
+        }
+        
+        this.ctx.restore();
     }
     
     drawGoomba(x, y, width, height) {
@@ -1429,7 +1479,7 @@ class MarioMiniGame {
         const coinFrame = Math.floor(this.animationFrame / 8) % 4;
         for (let coin of this.coins) {
             if (!coin.collected) {
-                this.drawCoin(coin.x + coin.width/2, coin.y + coin.height/2, coinFrame);
+                this.drawCoin(coin.x + coin.width/2, coin.y + coin.height/2, coinFrame, coin);
             }
         }
         
@@ -1740,6 +1790,10 @@ class MarioMiniGame {
                 this.drawMovingPlatform(platform);
             } else if (platform.type === 'ground') {
                 this.drawGroundPattern(platform);
+            } else if (platform.type === 'rainbow') {
+                this.drawRainbowPlatform(platform);
+            } else if (platform.type === 'victory') {
+                this.drawVictoryPlatform(platform);
             }
             
             this.ctx.restore();
@@ -1822,6 +1876,72 @@ class MarioMiniGame {
                 this.ctx.fillRect(x + Math.random() * 5, y + Math.random() * 5, 3, 3);
             }
         }
+    }
+
+    drawRainbowPlatform(platform) {
+        // Animated rainbow glow
+        const glowIntensity = Math.sin(this.animationFrame * 0.15) * 0.5 + 1;
+        this.ctx.shadowColor = platform.glowColor;
+        this.ctx.shadowBlur = 15 * glowIntensity;
+        
+        // Rainbow gradient effect
+        const gradient = this.ctx.createLinearGradient(platform.x, platform.y, platform.x + platform.width, platform.y);
+        gradient.addColorStop(0, platform.color);
+        gradient.addColorStop(0.5, '#FFD93D');
+        gradient.addColorStop(1, platform.color);
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        
+        // Sparkle effects
+        for (let i = 0; i < 3; i++) {
+            const sparkleX = platform.x + Math.random() * platform.width;
+            const sparkleY = platform.y + Math.random() * platform.height;
+            const sparkleSize = Math.sin(this.animationFrame * 0.2 + i) * 2 + 3;
+            
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.beginPath();
+            this.ctx.arc(sparkleX, sparkleY, sparkleSize, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+        
+        this.ctx.shadowBlur = 0;
+    }
+
+    drawVictoryPlatform(platform) {
+        // Pulsing golden glow
+        const pulseIntensity = Math.sin(this.animationFrame * 0.2) * 0.7 + 1;
+        this.ctx.shadowColor = '#FFD93D';
+        this.ctx.shadowBlur = 20 * pulseIntensity;
+        
+        // Golden gradient
+        const gradient = this.ctx.createRadialGradient(
+            platform.x + platform.width/2, platform.y + platform.height/2, 0,
+            platform.x + platform.width/2, platform.y + platform.height/2, platform.width/2
+        );
+        gradient.addColorStop(0, '#FFD93D');
+        gradient.addColorStop(0.7, '#FFA500');
+        gradient.addColorStop(1, '#FF8C00');
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+        
+        // Victory stars
+        for (let i = 0; i < 5; i++) {
+            const starX = platform.x + (i + 1) * platform.width / 6;
+            const starY = platform.y + platform.height/2;
+            const starSize = Math.sin(this.animationFrame * 0.1 + i) * 3 + 8;
+            
+            this.drawStar(starX, starY, starSize);
+        }
+        
+        // Crown effect on top
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.font = 'bold 20px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('👑', platform.x + platform.width/2, platform.y - 10);
+        
+        this.ctx.shadowBlur = 0;
     }
     
     // ===== GAME INITIALIZATION =====

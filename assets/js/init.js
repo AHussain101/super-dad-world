@@ -23,11 +23,18 @@ function showLoadingState() {
     loadingOverlay.id = 'loading-overlay';
     loadingOverlay.innerHTML = `
         <div class="loading-content">
-            <div class="loading-spinner">🍄</div>
-            <h2>Loading Super Dad World...</h2>
-            <p>Preparing your magical journey through time...</p>
+            <div class="loading-spinner">👨‍👦</div>
+            <h2>Super Dad World</h2>
+            <h3>A Father's Day Journey</h3>
+            <p>Loading a lifetime of precious memories...</p>
+            <p class="loading-subtitle">From Aarfan to the most amazing Baba ❤️</p>
             <div class="loading-bar">
                 <div class="loading-progress" id="loading-progress"></div>
+            </div>
+            <div class="loading-hearts">
+                <span class="heart">💝</span>
+                <span class="heart">👨‍👦</span>
+                <span class="heart">❤️</span>
             </div>
         </div>
     `;
@@ -129,17 +136,60 @@ function injectLoadingStyles() {
         }
         
         .loading-content h2 {
-            font-size: 1.5rem;
-            color: #007bff;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            color: #FFD93D;
+            margin-bottom: 0.5rem;
             text-shadow: 2px 2px 0px #000000;
+        }
+        
+        .loading-content h3 {
+            font-size: 1.2rem;
+            color: #FF6B6B;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 0px #000000;
         }
         
         .loading-content p {
             font-size: 0.9rem;
             color: #cccccc;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             line-height: 1.5;
+        }
+        
+        .loading-subtitle {
+            font-size: 1rem !important;
+            color: #4ECDC4 !important;
+            font-style: italic;
+            margin-bottom: 2rem !important;
+        }
+        
+        .loading-hearts {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .loading-hearts .heart {
+            font-size: 1.5rem;
+            animation: heartbeat 2s ease-in-out infinite;
+        }
+        
+        .loading-hearts .heart:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        
+        .loading-hearts .heart:nth-child(3) {
+            animation-delay: 1s;
+        }
+        
+        @keyframes heartbeat {
+            0%, 50%, 100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.2);
+            }
         }
         
         .loading-bar {
