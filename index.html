@@ -13,7 +13,10 @@
         <div class="title-container">
             <h1 class="game-title">SUPER DAD WORLD</h1>
             <p class="subtitle">A Father's Day Journey Through Time</p>
-            <button id="start-game" class="mario-btn">Press Start</button>
+            <div class="start-actions">
+                <button id="start-game" class="mario-btn">Continue Adventure</button>
+                <button id="new-game" class="mario-btn secondary">New Game</button>
+            </div>
         </div>
         <div class="mario-character">🍄</div>
     </div>
@@ -189,24 +192,28 @@
             
             <!-- Photo reveal section (right side) -->
             <div class="photo-reveal-section">
-                <div class="photo-reveal" id="photo-reveal" style="display: none;">
-                    <div class="photo-frame">
-                        <img id="level-photo" src="" alt="Memory Photo">
-                    </div>
-                    <div class="level-actions">
-                        <button id="complete-level" class="mario-btn complete-btn">Complete Level</button>
-                    </div>
-                </div>
-                
                 <!-- Default message when photo not revealed -->
                 <div class="photo-placeholder" id="photo-placeholder">
                     <div class="placeholder-content">
                         <div class="level-icon-display" id="level-icon-display">🍄</div>
-                        <h3>Complete the Challenge!</h3>
+                        <h3>Memory Locked</h3>
                         <p>Beat the Mario mini-game to unlock a special memory and photo from this stage of your life with Dad.</p>
                         <div class="challenge-hint">
-                            <p><strong>Challenge:</strong> <span id="challenge-description">Collect all coins and reach the flag!</span></p>
+                            <p><strong>🎮 Your Mission:</strong> Collect all coins, then reach the flag to unlock your memory!</p>
                         </div>
+                    </div>
+                </div>
+                
+                <div class="photo-reveal" id="photo-reveal" style="display: none;">
+                    <div class="photo-frame">
+                        <img id="level-photo" src="" alt="Memory Photo">
+                    </div>
+                    <div class="memory-message">
+                        <p id="photo-caption">A precious memory revealed...</p>
+                    </div>
+                    <div class="level-actions">
+                        <button id="complete-level" class="mario-btn complete-btn">Complete Level</button>
+                        <button id="view-gallery-from-level" class="mario-btn secondary-btn">📸 View Gallery</button>
                     </div>
                 </div>
             </div>
@@ -299,5 +306,6 @@
 
     <script src="assets/js/mario-minigame.js"></script>
     <script src="assets/js/game.js"></script>
+    <script src="assets/js/init.js"></script>
 </body>
 </html> 

@@ -2,11 +2,17 @@
 class MarioMiniGame {
     constructor(canvasId, level, character = 'mario') {
         this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) {
+            console.error('Canvas not found:', canvasId);
+            return;
+        }
         this.ctx = this.canvas.getContext('2d');
         this.level = level;
         this.character = character;
         this.gameCompleted = false;
         this.gameStarted = false;
+        this.animationId = null;
+        this.onCompleteCallback = null;
         
         // Game dimensions - MUCH BIGGER!
         this.canvas.width = 800;
@@ -56,35 +62,36 @@ class MarioMiniGame {
     }
     
     getCoinsNeeded() {
-        return [0, 2, 2, 3, 3, 3, 4, 4][this.level] || 2;
+        // Much easier - last 2 levels only need 1 coin each!
+        return [0, 1, 1, 2, 2, 2, 1, 1][this.level] || 1;
     }
     
     getCharacterStats(character) {
         const stats = {
             mario: {
-                speed: 4,
-                jumpPower: 12,
-                acceleration: 0.6,
-                friction: 0.85,
-                gravity: 0.5,
+                speed: 2.5,          // Reduced from 4 to 2.5
+                jumpPower: 9,        // Reduced from 12 to 9
+                acceleration: 0.4,   // Reduced from 0.6 to 0.4
+                friction: 0.9,       // Increased from 0.85 to 0.9 (more stopping power)
+                gravity: 0.35,       // Reduced from 0.5 to 0.35 (lighter feeling)
                 color: '#FF0000',
                 name: 'Mario'
             },
             luigi: {
-                speed: 3.5,
-                jumpPower: 15,
-                acceleration: 0.5,
-                friction: 0.9,
-                gravity: 0.4,
+                speed: 2.2,          // Reduced from 3.5 to 2.2
+                jumpPower: 11,       // Reduced from 15 to 11
+                acceleration: 0.35,  // Reduced from 0.5 to 0.35
+                friction: 0.92,      // Increased from 0.9 to 0.92
+                gravity: 0.3,        // Reduced from 0.4 to 0.3
                 color: '#00FF00',
                 name: 'Luigi'
             },
             donkey: {
-                speed: 5,
-                jumpPower: 10,
-                acceleration: 0.8,
-                friction: 0.8,
-                gravity: 0.6,
+                speed: 2.8,          // Reduced from 5 to 2.8
+                jumpPower: 8,        // Reduced from 10 to 8
+                acceleration: 0.5,   // Reduced from 0.8 to 0.5
+                friction: 0.88,      // Increased from 0.8 to 0.88
+                gravity: 0.4,        // Reduced from 0.6 to 0.4
                 color: '#8B4513',
                 name: 'Donkey Kong'
             }
@@ -178,25 +185,19 @@ class MarioMiniGame {
                 );
                 break;
                 
-            case 6: // Mid Teens - Moderate challenge
+            case 6: // Mid Teens - EASY now! Only need 1 coin
                 platforms.push(
-                    { x: 120, y: 400, width: 70, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 250, y: 350, width: 25, height: 25, color: '#FFD700', type: 'question' },
-                    { x: 340, y: 300, width: 80, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 480, y: 250, width: 80, height: 25, color: '#32CD32', type: 'moving', moveSpeed: 1.5, moveRange: 60, originalX: 480 },
-                    { x: 620, y: 200, width: 80, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 380, y: 150, width: 25, height: 25, color: '#FFD700', type: 'question' }
+                    { x: 150, y: 400, width: 120, height: 25, color: '#D2691E', type: 'brick' },
+                    { x: 350, y: 360, width: 120, height: 25, color: '#D2691E', type: 'brick' },
+                    { x: 550, y: 320, width: 120, height: 25, color: '#D2691E', type: 'brick' }
                 );
                 break;
                 
-            case 7: // Late Teens - Final challenge
+            case 7: // Late Teens - SUPER EASY final level! Only need 1 coin
                 platforms.push(
-                    { x: 150, y: 400, width: 80, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 300, y: 350, width: 25, height: 25, color: '#FFD700', type: 'question' },
-                    { x: 400, y: 300, width: 70, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 540, y: 250, width: 80, height: 25, color: '#32CD32', type: 'moving', moveSpeed: -2, moveRange: 90, originalX: 540 },
-                    { x: 680, y: 180, width: 80, height: 25, color: '#D2691E', type: 'brick' },
-                    { x: 420, y: 120, width: 25, height: 25, color: '#FFD700', type: 'question' }
+                    { x: 150, y: 400, width: 150, height: 25, color: '#D2691E', type: 'brick' },
+                    { x: 400, y: 350, width: 150, height: 25, color: '#D2691E', type: 'brick' },
+                    { x: 600, y: 300, width: 120, height: 25, color: '#D2691E', type: 'brick' }
                 );
                 break;
         }
@@ -247,21 +248,15 @@ class MarioMiniGame {
                 );
                 break;
                 
-            case 6: // Mid Teens - 4 coins
+            case 6: // Mid Teens - EASY! Only 1 coin needed
                 coins.push(
-                    { x: 160, y: 370, width: 20, height: 20, collected: false },
-                    { x: 380, y: 270, width: 20, height: 20, collected: false },
-                    { x: 520, y: 220, width: 20, height: 20, collected: false },
-                    { x: 660, y: 170, width: 20, height: 20, collected: false }
+                    { x: 200, y: 370, width: 20, height: 20, collected: false }
                 );
                 break;
                 
-            case 7: // Late Teens - 4 coins
+            case 7: // Late Teens - SUPER EASY! Only 1 coin needed  
                 coins.push(
-                    { x: 190, y: 370, width: 20, height: 20, collected: false },
-                    { x: 440, y: 270, width: 20, height: 20, collected: false },
-                    { x: 580, y: 220, width: 20, height: 20, collected: false },
-                    { x: 720, y: 150, width: 20, height: 20, collected: false }
+                    { x: 200, y: 370, width: 20, height: 20, collected: false }
                 );
                 break;
         }
@@ -270,16 +265,14 @@ class MarioMiniGame {
     }
     
     generateEnemies() {
-        // Fewer enemies, easier to avoid
+        // Much fewer enemies - no enemies in last 2 levels!
         const enemies = [];
         
-        if (this.level >= 5) {
-            enemies.push({ x: 300, y: 420, width: 25, height: 25, vx: -0.6, type: 'goomba' });
+        if (this.level === 5) {
+            enemies.push({ x: 300, y: 420, width: 25, height: 25, vx: -0.4, type: 'goomba' });
         }
         
-        if (this.level >= 7) {
-            enemies.push({ x: 500, y: 420, width: 25, height: 25, vx: -0.8, type: 'goomba' });
-        }
+        // Levels 6 and 7 have NO enemies - completely safe!
         
         return enemies;
     }
@@ -289,15 +282,19 @@ class MarioMiniGame {
     }
     
     setupEventListeners() {
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
+        // Bind methods to preserve 'this' context for cleanup
+        this.boundKeyDown = (e) => {
             this.keys[e.key] = true;
             if (e.key === ' ') e.preventDefault(); // Prevent page scroll
-        });
+        };
         
-        document.addEventListener('keyup', (e) => {
+        this.boundKeyUp = (e) => {
             this.keys[e.key] = false;
-        });
+        };
+        
+        // Keyboard controls
+        document.addEventListener('keydown', this.boundKeyDown);
+        document.addEventListener('keyup', this.boundKeyUp);
         
         // Touch controls for mobile
         this.canvas.addEventListener('touchstart', (e) => {
@@ -380,9 +377,9 @@ class MarioMiniGame {
             }
         }
         
-        // Update enemies - slower for easier avoidance
+        // Update enemies - much slower for easier avoidance
         for (let enemy of this.enemies) {
-            enemy.x += enemy.vx;
+            enemy.x += enemy.vx * 0.5; // Make enemies move at half speed
             
             // Simple AI - turn around at edges
             if (enemy.x <= 50 || enemy.x >= 450) {
@@ -1447,7 +1444,7 @@ class MarioMiniGame {
             this.drawCompletionOverlay();
         }
         
-        requestAnimationFrame(() => this.gameLoop());
+        this.animationId = requestAnimationFrame(() => this.gameLoop());
     }
     
     checkCollisions() {
@@ -1829,8 +1826,55 @@ class MarioMiniGame {
     
     // ===== GAME INITIALIZATION =====
     start() {
+        console.log('🍄 Mario Mini-Game Started!');
         this.gameStarted = true;
         this.gameLoop();
+    }
+
+    cleanup() {
+        console.log('🍄 Cleaning up Mario game...');
+        this.gameStarted = false;
+        this.gameCompleted = true;
+        
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        
+        // Remove event listeners
+        if (this.boundKeyDown) {
+            document.removeEventListener('keydown', this.boundKeyDown);
+        }
+        if (this.boundKeyUp) {
+            document.removeEventListener('keyup', this.boundKeyUp);
+        }
+        
+        // Clear canvas
+        if (this.ctx) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+    }
+
+    handleResize() {
+        if (!this.canvas) return;
+        
+        // Maintain aspect ratio while fitting to container
+        const container = this.canvas.parentElement;
+        if (container) {
+            const rect = container.getBoundingClientRect();
+            const aspectRatio = 800 / 500;
+            
+            let newWidth = rect.width - 40; // Some padding
+            let newHeight = newWidth / aspectRatio;
+            
+            if (newHeight > rect.height - 40) {
+                newHeight = rect.height - 40;
+                newWidth = newHeight * aspectRatio;
+            }
+            
+            this.canvas.style.width = newWidth + 'px';
+            this.canvas.style.height = newHeight + 'px';
+        }
     }
     
     // Public method to set completion callback

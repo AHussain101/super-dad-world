@@ -9,6 +9,14 @@ class SuperDadWorld {
         this.gameProgress = this.loadProgress();
         this.musicPlaying = false;
         this.selectedCharacter = null;
+        this.currentMarioGame = null;
+        this.transitionInProgress = false;
+        
+        // Enhanced state management
+        this.screenHistory = [];
+        this.levelStates = new Map();
+        this.autoSave = true;
+        this.debugMode = false;
         
         console.log('🍄 About to initialize game...');
         this.init();
@@ -24,7 +32,10 @@ class SuperDadWorld {
                 folder: "baby-years",
                 placeholder: "assets/images/baby-years/placeholder.jpg",
                 caption: "The beginning of our amazing journey together...",
-                storyPlaceholder: "Write about your earliest memories with Dad, those precious baby moments..."
+                storyPlaceholder: "Write about your earliest memories with Dad, those precious baby moments...",
+                completed: false,
+                unlocked: true,
+                gameCompleted: false
             },
             2: {
                 title: "World 1-2: Early Childhood (3-5)",
@@ -33,7 +44,10 @@ class SuperDadWorld {
                 folder: "early-childhood",
                 placeholder: "assets/images/early-childhood/placeholder.jpg",
                 caption: "Taking first steps into adventure...",
-                storyPlaceholder: "Share memories of learning to walk, talk, and explore the world with Dad's guidance..."
+                storyPlaceholder: "Share memories of learning to walk, talk, and explore the world with Dad's guidance...",
+                completed: false,
+                unlocked: false,
+                gameCompleted: false
             },
             3: {
                 title: "World 2-1: Elementary Days (6-8)",
@@ -42,7 +56,10 @@ class SuperDadWorld {
                 folder: "elementary-days",
                 placeholder: "assets/images/elementary-days/placeholder.jpg",
                 caption: "School adventures and growing wisdom...",
-                storyPlaceholder: "Remember the school days, homework help, and Dad's encouragement in learning..."
+                storyPlaceholder: "Remember the school days, homework help, and Dad's encouragement in learning...",
+                completed: false,
+                unlocked: false,
+                gameCompleted: false
             },
             4: {
                 title: "World 2-2: Middle School (9-11)",
@@ -51,7 +68,10 @@ class SuperDadWorld {
                 folder: "middle-school",
                 placeholder: "assets/images/middle-school/placeholder.jpg",
                 caption: "Navigating new challenges together...",
-                storyPlaceholder: "Those middle school years - Dad's support through growing pains and new discoveries..."
+                storyPlaceholder: "Those middle school years - Dad's support through growing pains and new discoveries...",
+                completed: false,
+                unlocked: false,
+                gameCompleted: false
             },
             5: {
                 title: "World 3-1: Early Teens (12-14)",
@@ -60,7 +80,10 @@ class SuperDadWorld {
                 folder: "early-teens",
                 placeholder: "assets/images/early-teens/placeholder.jpg",
                 caption: "Finding strength and identity...",
-                storyPlaceholder: "The teenage transition - Dad's patience and wisdom during those challenging years..."
+                storyPlaceholder: "The teenage transition - Dad's patience and wisdom during those challenging years...",
+                completed: false,
+                unlocked: false,
+                gameCompleted: false
             },
             6: {
                 title: "World 3-2: Mid Teens (15-17)",
@@ -69,7 +92,10 @@ class SuperDadWorld {
                 folder: "mid-teens",
                 placeholder: "assets/images/mid-teens/placeholder.jpg",
                 caption: "Achieving new milestones...",
-                storyPlaceholder: "High school adventures, driving lessons, and Dad's trust in your growing independence..."
+                storyPlaceholder: "High school adventures, driving lessons, and Dad's trust in your growing independence...",
+                completed: false,
+                unlocked: false,
+                gameCompleted: false
             },
             7: {
                 title: "World 4-1: Late Teens (18-19)",
@@ -78,7 +104,10 @@ class SuperDadWorld {
                 folder: "late-teens",
                 placeholder: "assets/images/late-teens/placeholder.jpg",
                 caption: "Ready to conquer the world...",
-                storyPlaceholder: "Approaching adulthood - Dad's pride in who you've become and lessons for the future..."
+                storyPlaceholder: "Approaching adulthood - Dad's pride in who you've become and lessons for the future...",
+                completed: false,
+                unlocked: false,  
+                gameCompleted: false
             }
         };
     }
@@ -87,9 +116,642 @@ class SuperDadWorld {
         console.log('🍄 Initializing Super Dad World...');
         this.setupEventListeners();
         this.loadProgress();
+        this.refreshLevelStates();
         this.showScreen('start-screen');
         this.setupMusic();
         this.drawCharacterPreviews();
+        this.setupPerformanceOptimizations();
+    }
+
+    // ===== ENHANCED SCREEN MANAGEMENT =====
+    showScreen(screenId, transition = true) {
+        if (this.transitionInProgress) return;
+        
+        console.log(`🍄 Transitioning to screen: ${screenId}`);
+        
+        if (transition && this.currentScreen !== screenId) {
+            this.transitionInProgress = true;
+            
+            // Add current screen to history
+            if (this.currentScreen) {
+                this.screenHistory.push(this.currentScreen);
+                if (this.screenHistory.length > 10) {
+                    this.screenHistory.shift(); // Keep history manageable
+                }
+            }
+            
+            // Smooth transition
+            this.performScreenTransition(this.currentScreen, screenId);
+        } else {
+            this.setActiveScreen(screenId);
+        }
+    }
+
+    performScreenTransition(fromScreen, toScreen) {
+        const fromElement = fromScreen ? document.getElementById(fromScreen) : null;
+        const toElement = document.getElementById(toScreen);
+        
+        if (!toElement) {
+            console.error(`Screen ${toScreen} not found`);
+            this.transitionInProgress = false;
+            return;
+        }
+
+        // Prepare the incoming screen
+        toElement.style.display = 'block';
+        toElement.classList.remove('active', 'exiting');
+        toElement.classList.add('screen');
+        
+        // Add loading state if needed
+        if (toScreen === 'level-screen') {
+            toElement.classList.add('loading');
+        }
+
+        // Animate out current screen
+        if (fromElement) {
+            fromElement.classList.add('exiting');
+            
+            setTimeout(() => {
+                fromElement.classList.remove('active', 'exiting');
+                fromElement.style.display = 'none';
+                
+                // Animate in new screen
+                requestAnimationFrame(() => {
+                    toElement.classList.add('active');
+                    toElement.classList.remove('loading');
+                    
+                    setTimeout(() => {
+                        this.transitionInProgress = false;
+                        this.onScreenTransitionComplete(toScreen);
+                    }, 400);
+                });
+            }, 400);
+        } else {
+            // No current screen, just show the new one
+            requestAnimationFrame(() => {
+                toElement.classList.add('active');
+                toElement.classList.remove('loading');
+                
+                setTimeout(() => {
+                    this.transitionInProgress = false;
+                    this.onScreenTransitionComplete(toScreen);
+                }, 400);
+            });
+        }
+
+        this.currentScreen = toScreen;
+    }
+
+    onScreenTransitionComplete(screenId) {
+        console.log(`🍄 Screen transition complete: ${screenId}`);
+        
+        // Screen-specific post-transition actions
+        switch(screenId) {
+            case 'world-map':
+                this.refreshWorldMap();
+                break;
+            case 'level-screen':
+                this.initializeLevelScreen();
+                break;
+            case 'character-select':
+                this.refreshCharacterSelection();
+                break;
+        }
+        
+        // Auto-save progress
+        if (this.autoSave) {
+            this.saveProgress();
+        }
+    }
+
+    setActiveScreen(screenId) {
+        // Hide all screens
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active', 'exiting');
+            screen.style.display = 'none';
+        });
+
+        // Show the active screen
+        const activeScreen = document.getElementById(screenId);
+        if (activeScreen) {
+            activeScreen.style.display = 'block';
+            activeScreen.classList.add('active');
+            this.currentScreen = screenId;
+        }
+    }
+
+    // ===== ENHANCED LEVEL MANAGEMENT =====
+    refreshLevelStates() {
+        console.log('🍄 Refreshing level states...');
+        
+        // Update level unlock states based on completed levels
+        const sortedLevels = Object.keys(this.levelData).map(Number).sort();
+        
+        for (let i = 0; i < sortedLevels.length; i++) {
+            const levelNum = sortedLevels[i];
+            const level = this.levelData[levelNum];
+            
+            if (levelNum === 1) {
+                level.unlocked = true; // First level always unlocked
+            } else {
+                const previousLevel = sortedLevels[i - 1];
+                level.unlocked = this.levelData[previousLevel].completed;
+            }
+        }
+        
+        this.updateWorldMapDisplay();
+    }
+
+    updateWorldMapDisplay() {
+        console.log('🍄 Updating world map display...');
+        
+        document.querySelectorAll('.world-level').forEach((levelElement, index) => {
+            const levelNum = index + 1;
+            const levelData = this.levelData[levelNum];
+            
+            if (!levelData) return;
+            
+            // Update classes based on state
+            levelElement.classList.remove('locked', 'completed', 'unlocked');
+            
+            if (levelData.completed) {
+                levelElement.classList.add('completed');
+            } else if (levelData.unlocked) {
+                levelElement.classList.add('unlocked');
+            } else {
+                levelElement.classList.add('locked');
+            }
+            
+            // Update status icon
+            const statusElement = levelElement.querySelector('.level-status');
+            if (statusElement) {
+                if (levelData.completed) {
+                    statusElement.textContent = '✅';
+                    statusElement.className = 'level-status completed';
+                } else if (levelData.unlocked) {
+                    statusElement.textContent = '✨';
+                    statusElement.className = 'level-status unlocked';
+                } else {
+                    statusElement.textContent = '🔒';
+                    statusElement.className = 'level-status locked';
+                }
+            }
+            
+            // Update click behavior
+            if (levelData.unlocked && !levelData.completed) {
+                levelElement.style.cursor = 'pointer';
+                levelElement.setAttribute('title', 'Click to play!');
+            } else if (levelData.completed) {
+                levelElement.style.cursor = 'pointer';
+                levelElement.setAttribute('title', 'Completed! Click to replay.');
+            } else {
+                levelElement.style.cursor = 'not-allowed';
+                levelElement.setAttribute('title', 'Complete previous levels to unlock');
+            }
+        });
+        
+        // Update memory counter
+        const completedCount = Object.values(this.levelData).filter(l => l.completed).length;
+        const memoriesElement = document.getElementById('memories-collected');
+        if (memoriesElement) {
+            memoriesElement.textContent = completedCount;
+        }
+    }
+
+    refreshWorldMap() {
+        console.log('🍄 Refreshing world map...');
+        this.refreshLevelStates();
+        this.updateWorldMapDisplay();
+        
+        // Add entrance animation to levels
+        document.querySelectorAll('.world-level').forEach((level, index) => {
+            level.style.animationDelay = `${index * 0.1}s`;
+            level.classList.add('level-entrance');
+        });
+    }
+
+    enterLevel(levelNum) {
+        console.log(`🍄 Entering level ${levelNum}`);
+        
+        const levelData = this.levelData[levelNum];
+        if (!levelData || !levelData.unlocked) {
+            console.log('Level not unlocked');
+            this.showNotification('🔒 Complete previous levels first!', 'warning');
+            return;
+        }
+
+        this.currentLevel = levelNum;
+        this.showScreen('level-screen');
+    }
+
+    initializeLevelScreen() {
+        console.log(`🍄 Initializing level screen for level ${this.currentLevel}`);
+        
+        const levelData = this.levelData[this.currentLevel];
+        if (!levelData) return;
+
+        // Update level title
+        const titleElement = document.getElementById('current-level-title');
+        if (titleElement) {
+            titleElement.textContent = levelData.title;
+        }
+
+        // Initialize mini-game
+        this.initializeMarioGame();
+        
+        // Setup photo section
+        this.setupPhotoSection();
+        
+        // Reset level state
+        this.resetLevelState();
+    }
+
+    initializeMarioGame() {
+        console.log(`🍄 Initializing Mario game for level ${this.currentLevel}`);
+        
+        // Clean up existing game
+        if (this.currentMarioGame) {
+            this.currentMarioGame.cleanup();
+            this.currentMarioGame = null;
+        }
+
+        // Create new game instance
+        try {
+            this.currentMarioGame = new MarioMiniGame(
+                'mario-canvas', 
+                this.currentLevel, 
+                this.selectedCharacter || 'mario'
+            );
+            
+            // Set completion callback
+            this.currentMarioGame.setOnComplete(() => {
+                console.log('🍄 Mario game completed!');
+                this.onMarioGameComplete();
+            });
+            
+        } catch (error) {
+            console.error('Error initializing Mario game:', error);
+            this.showNotification('⚠️ Game loading error. Please refresh!', 'error');
+        }
+    }
+
+    onMarioGameComplete() {
+        console.log('🍄 Mario game completed, revealing photo...');
+        this.revealPhoto();
+        this.playSound('level-complete');
+        this.showNotification('🎉 Great job! Memory unlocked!', 'success');
+    }
+
+    setupPhotoSection() {
+        const photoSection = document.querySelector('.photo-reveal-section');
+        const placeholder = document.querySelector('.photo-placeholder');
+        const reveal = document.querySelector('.photo-reveal');
+        
+        if (photoSection && placeholder) {
+            // Show placeholder initially
+            placeholder.style.display = 'block';
+            if (reveal) reveal.style.display = 'none';
+            
+            // Update placeholder content
+            const levelData = this.levelData[this.currentLevel];
+            const iconDisplay = placeholder.querySelector('.level-icon-display');
+            const titleElement = placeholder.querySelector('h3');
+            const descElement = placeholder.querySelector('p');
+            
+            if (iconDisplay) iconDisplay.textContent = levelData.icon;
+            if (titleElement) titleElement.textContent = 'Memory Locked';
+            if (descElement) descElement.textContent = levelData.caption;
+        }
+    }
+
+    resetLevelState() {
+        // Reset any level-specific state
+        this.levelStates.set(this.currentLevel, {
+            gameCompleted: false,
+            photoRevealed: false,
+            startTime: Date.now()
+        });
+    }
+
+    revealPhoto() {
+        console.log('🍄 Revealing photo...');
+        
+        const placeholder = document.querySelector('.photo-placeholder');
+        const reveal = document.querySelector('.photo-reveal');
+        
+        if (placeholder && reveal) {
+            // Hide placeholder with animation
+            placeholder.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+            placeholder.style.opacity = '0';
+            placeholder.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                placeholder.style.display = 'none';
+                
+                // Show photo reveal
+                reveal.style.display = 'block';
+                reveal.style.opacity = '0';
+                reveal.style.transform = 'scale(0.8) rotateY(90deg)';
+                
+                // Load the actual photo
+                this.loadLevelPhoto(this.currentLevel);
+                
+                // Animate in
+                requestAnimationFrame(() => {
+                    reveal.style.transition = 'all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    reveal.style.opacity = '1';
+                    reveal.style.transform = 'scale(1) rotateY(0deg)';
+                });
+                
+                // Update level state
+                const levelState = this.levelStates.get(this.currentLevel) || {};
+                levelState.photoRevealed = true;
+                this.levelStates.set(this.currentLevel, levelState);
+                
+            }, 500);
+        }
+    }
+
+    completeLevel() {
+        console.log(`🍄 Completing level ${this.currentLevel}`);
+        
+        // Mark level as completed
+        this.levelData[this.currentLevel].completed = true;
+        this.completedLevels.add(this.currentLevel);
+        
+        // Save progress
+        this.saveProgress();
+        
+        // Refresh level states
+        this.refreshLevelStates();
+        
+        // Show completion notification
+        this.showNotification('🎉 Level completed! New memories unlocked!', 'success');
+        
+        // Play completion sound
+        this.playSound('level-complete');
+        
+        // Check if game is complete
+        this.checkGameCompletion();
+        
+        // Return to world map after delay
+        setTimeout(() => {
+            this.showScreen('world-map');
+        }, 2000);
+    }
+
+    checkGameCompletion() {
+        const totalLevels = Object.keys(this.levelData).length;
+        const completedCount = Object.values(this.levelData).filter(l => l.completed).length;
+        
+        if (completedCount === totalLevels) {
+            console.log('🍄 Game completed!');
+            setTimeout(() => {
+                this.showScreen('victory-screen');
+                this.setupVictoryScreen();
+            }, 3000);
+        }
+    }
+
+    // ===== ENHANCED PROGRESS MANAGEMENT =====
+    saveProgress() {
+        console.log('🍄 Saving progress...');
+        
+        const progressData = {
+            currentLevel: this.currentLevel,
+            completedLevels: Array.from(this.completedLevels),
+            selectedCharacter: this.selectedCharacter,
+            levelData: this.levelData,
+            musicPlaying: this.musicPlaying,
+            timestamp: Date.now(),
+            version: '2.0'
+        };
+        
+        try {
+            localStorage.setItem('superDadWorld_progress', JSON.stringify(progressData));
+            console.log('Progress saved successfully');
+        } catch (error) {
+            console.error('Error saving progress:', error);
+            this.showNotification('⚠️ Could not save progress', 'warning');
+        }
+    }
+
+    loadProgress() {
+        console.log('🍄 Loading progress...');
+        
+        try {
+            const savedData = localStorage.getItem('superDadWorld_progress');
+            if (savedData) {
+                const progressData = JSON.parse(savedData);
+                
+                // Validate saved data
+                if (progressData.version && progressData.levelData) {
+                    this.currentLevel = progressData.currentLevel || 1;
+                    this.completedLevels = new Set(progressData.completedLevels || []);
+                    this.selectedCharacter = progressData.selectedCharacter;
+                    this.musicPlaying = progressData.musicPlaying || false;
+                    
+                    // Merge level data carefully
+                    Object.keys(this.levelData).forEach(levelNum => {
+                        if (progressData.levelData[levelNum]) {
+                            this.levelData[levelNum].completed = progressData.levelData[levelNum].completed || false;
+                        }
+                    });
+                    
+                    console.log('Progress loaded successfully');
+                    return progressData;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading progress:', error);
+        }
+        
+        return null;
+    }
+
+    resetGame() {
+        console.log('🍄 Resetting game...');
+        
+        // Clear all progress - both localStorage keys
+        localStorage.removeItem('superDadWorld_progress');
+        localStorage.removeItem('super-dad-world-progress');
+        
+        // Clear any other game-related localStorage keys
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.includes('superDadWorld') || key.includes('super-dad-world'))) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Reset state
+        this.currentLevel = 1;
+        this.completedLevels.clear();
+        this.selectedCharacter = null;
+        this.levelStates.clear();
+        
+        // Reset level data
+        Object.values(this.levelData).forEach(level => {
+            level.completed = false;
+            level.unlocked = false;
+            level.gameCompleted = false;
+        });
+        this.levelData[1].unlocked = true; // First level always unlocked
+        
+        // Clean up current game
+        if (this.currentMarioGame) {
+            this.currentMarioGame.cleanup();
+            this.currentMarioGame = null;
+        }
+        
+        // Refresh UI
+        this.refreshLevelStates();
+        this.showScreen('start-screen');
+        
+        this.showNotification('🔄 Game reset successfully!', 'info');
+    }
+
+    // ===== NOTIFICATION SYSTEM =====
+    showNotification(message, type = 'info', duration = 3000) {
+        // Create notification element if it doesn't exist
+        let notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notification-container';
+            notificationContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                pointer-events: none;
+            `;
+            document.body.appendChild(notificationContainer);
+        }
+        
+        // Create notification
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            background: ${this.getNotificationColor(type)};
+            color: white;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        `;
+        
+        notificationContainer.appendChild(notification);
+        
+        // Animate in
+        requestAnimationFrame(() => {
+            notification.style.transform = 'translateX(0)';
+        });
+        
+        // Auto-remove
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, duration);
+    }
+
+    getNotificationColor(type) {
+        const colors = {
+            'success': 'linear-gradient(45deg, #28a745, #20c997)',
+            'error': 'linear-gradient(45deg, #dc3545, #c82333)',
+            'warning': 'linear-gradient(45deg, #ffc107, #fd7e14)',
+            'info': 'linear-gradient(45deg, #007bff, #6f42c1)'
+        };
+        return colors[type] || colors.info;
+    }
+
+    // ===== PERFORMANCE OPTIMIZATIONS =====
+    setupPerformanceOptimizations() {
+        console.log('🍄 Setting up performance optimizations...');
+        
+        // Preload critical images
+        this.preloadImages();
+        
+        // Setup intersection observer for lazy loading
+        this.setupLazyLoading();
+        
+        // Setup resize handler with debouncing
+        this.setupResizeHandler();
+    }
+
+    preloadImages() {
+        const imagesToPreload = [
+            'assets/images/baby-years/DSC00794.JPG',
+            'assets/images/early-childhood/IMG_4081.JPG',
+            'assets/images/elementary-days/IMG_2753.JPG',
+            'assets/images/middle-school/IMG_0003.JPG',
+            'assets/images/early-teens/IMG_0214.jpeg',
+            'assets/images/mid-teens/IMG_0059.JPG',
+            'assets/images/late-teens/IMG_0063.JPG'
+        ];
+        
+        imagesToPreload.forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+    }
+
+    setupLazyLoading() {
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                            imageObserver.unobserve(img);
+                        }
+                    }
+                });
+            });
+            
+            // Observe images with data-src attributes
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
+    }
+
+    setupResizeHandler() {
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.handleResize();
+            }, 250);
+        });
+    }
+
+    handleResize() {
+        // Refresh Mario game canvas if active
+        if (this.currentMarioGame && this.currentScreen === 'level-screen') {
+            this.currentMarioGame.handleResize();
+        }
+        
+        // Refresh character previews if needed
+        if (this.currentScreen === 'character-select') {
+            this.drawCharacterPreviews();
+        }
     }
 
     // ===== EVENT LISTENERS =====
@@ -100,6 +762,19 @@ class SuperDadWorld {
             startBtn.addEventListener('click', () => {
                 console.log('🍄 Start game clicked');
                 this.showScreen('character-select');
+            });
+        }
+
+        // New game button
+        const newGameBtn = document.getElementById('new-game');
+        if (newGameBtn) {
+            newGameBtn.addEventListener('click', () => {
+                console.log('🍄 New game clicked - resetting progress');
+                this.resetGame();
+                // Force reload to ensure clean state
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
             });
         }
 
@@ -138,6 +813,8 @@ class SuperDadWorld {
                 
                 if (this.isLevelUnlocked(levelNum)) {
                     this.enterLevel(levelNum);
+                } else {
+                    this.showNotification('🔒 Complete previous levels first!', 'warning');
                 }
             });
         });
@@ -147,8 +824,14 @@ class SuperDadWorld {
         if (backBtn) {
             backBtn.addEventListener('click', () => {
                 console.log('🍄 Back to world clicked');
+                
+                // Clean up current Mario game
+                if (this.currentMarioGame) {
+                    this.currentMarioGame.cleanup();
+                    this.currentMarioGame = null;
+                }
+                
                 this.showScreen('world-map');
-                this.updateWorldMap();
             });
         }
 
@@ -158,6 +841,15 @@ class SuperDadWorld {
             completeBtn.addEventListener('click', () => {
                 console.log('🍄 Complete level clicked');
                 this.completeLevel();
+            });
+        }
+
+        // View gallery from level button
+        const viewGalleryFromLevelBtn = document.getElementById('view-gallery-from-level');
+        if (viewGalleryFromLevelBtn) {
+            viewGalleryFromLevelBtn.addEventListener('click', () => {
+                console.log('🍄 View gallery from level clicked');
+                this.showPhotoGallery();
             });
         }
 
@@ -199,7 +891,6 @@ class SuperDadWorld {
         const cancelResetBtn = document.getElementById('cancel-reset');
         if (cancelResetBtn) {
             cancelResetBtn.addEventListener('click', () => {
-                console.log('🍄 Cancel reset clicked');
                 this.hideResetModal();
             });
         }
@@ -207,17 +898,46 @@ class SuperDadWorld {
         const confirmResetBtn = document.getElementById('confirm-reset');
         if (confirmResetBtn) {
             confirmResetBtn.addEventListener('click', () => {
-                console.log('🍄 Confirm reset clicked');
+                this.hideResetModal();
                 this.resetGame();
             });
         }
 
-        // Music controls
+        // Music toggle
         const musicToggle = document.getElementById('music-toggle');
         if (musicToggle) {
             musicToggle.addEventListener('click', () => {
                 this.toggleMusic();
             });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            this.handleKeyboard(e);
+        });
+
+        // Prevent context menu on canvas
+        document.addEventListener('contextmenu', (e) => {
+            if (e.target.tagName === 'CANVAS') {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // ===== UTILITY METHODS =====
+    isLevelUnlocked(levelNum) {
+        return this.levelData[levelNum] && this.levelData[levelNum].unlocked;
+    }
+
+    refreshCharacterSelection() {
+        // Refresh character selection if needed
+        if (this.selectedCharacter) {
+            const selectedOption = document.querySelector(`[data-character="${this.selectedCharacter}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+                const confirmBtn = document.getElementById('confirm-character');
+                if (confirmBtn) confirmBtn.disabled = false;
+            }
         }
     }
 
@@ -250,190 +970,6 @@ class SuperDadWorld {
             'donkey': 'Donkey Kong'
         };
         return names[character] || 'Mario';
-    }
-
-    // ===== SCREEN MANAGEMENT =====
-    showScreen(screenId) {
-        console.log(`🍄 Showing screen: ${screenId}`);
-        
-        // Hide all screens
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        
-        // Show target screen
-        const targetScreen = document.getElementById(screenId);
-        if (targetScreen) {
-            targetScreen.classList.add('active');
-            
-            // Special handling for different screens
-            if (screenId === 'world-map') {
-                this.updateWorldMap();
-            } else if (screenId === 'victory-screen') {
-                this.setupVictoryScreen();
-            } else if (screenId === 'character-select') {
-                // Redraw character previews when showing character selection
-                setTimeout(() => this.drawCharacterPreviews(), 100);
-            }
-        }
-        
-        this.currentScreen = screenId;
-    }
-
-    // ===== LEVEL MANAGEMENT =====
-    isLevelUnlocked(levelNum) {
-        if (levelNum === 1) return true;
-        return this.completedLevels.has(levelNum - 1);
-    }
-
-    enterLevel(levelNum) {
-        this.currentLevel = levelNum;
-        const levelData = this.levelData[levelNum];
-        
-        // Update level display
-        document.getElementById('current-level-title').textContent = levelData.title;
-        
-        // Update placeholder section
-        const levelIconDisplay = document.getElementById('level-icon-display');
-        const challengeDescription = document.getElementById('challenge-description');
-        
-        if (levelIconDisplay) {
-            levelIconDisplay.textContent = levelData.icon;
-        }
-        
-        if (challengeDescription) {
-            const challenges = {
-                1: "Easy jumps - collect 2 coins and reach the flag!",
-                2: "More platforms - collect 2 coins and reach the flag!",
-                3: "Question blocks - collect 3 coins and reach the flag!",
-                4: "Avoid enemies - collect 3 coins and reach the flag!",
-                5: "Moving platforms - collect 3 coins and reach the flag!",
-                6: "Advanced course - collect 4 coins and reach the flag!",
-                7: "Final challenge - collect 4 coins and reach the flag!"
-            };
-            challengeDescription.textContent = challenges[levelNum] || "Complete the Mario challenge!";
-        }
-        
-        // Show level screen
-        this.showScreen('level-screen');
-        
-        // Initialize Mario mini-game
-        setTimeout(() => {
-            if (window.currentMarioGame) {
-                window.currentMarioGame = null;
-            }
-            // Pass the selected character to the mini-game
-            window.currentMarioGame = new MarioMiniGame('mario-canvas', levelNum, this.selectedCharacter || 'mario');
-            
-            // Set up game completion callback
-            window.currentMarioGame.onComplete = () => {
-                console.log('🍄 Mario game completed!');
-                this.revealPhoto();
-                
-                // Show complete button after a delay
-                setTimeout(() => {
-                    const completeBtn = document.getElementById('complete-level');
-                    if (completeBtn) {
-                        completeBtn.style.display = 'block';
-                        completeBtn.disabled = false;
-                    }
-                }, 1000);
-            };
-        }, 100);
-        
-        // Load photo if level is already completed
-        if (this.completedLevels.has(levelNum)) {
-            this.loadLevelPhoto(levelNum);
-            const completeBtn = document.getElementById('complete-level');
-            if (completeBtn) {
-                completeBtn.style.display = 'block';
-                completeBtn.disabled = false;
-            }
-        } else {
-            // Hide photo section and complete button for uncompleted levels
-            const photoReveal = document.querySelector('.photo-reveal');
-            const photoPlaceholder = document.querySelector('.photo-placeholder');
-            const completeBtn = document.getElementById('complete-level');
-            
-            if (photoReveal) photoReveal.style.display = 'none';
-            if (photoPlaceholder) photoPlaceholder.style.display = 'block';
-            if (completeBtn) {
-                completeBtn.style.display = 'none';
-                completeBtn.disabled = true;
-            }
-        }
-    }
-
-    revealPhoto() {
-        console.log('🍄 Revealing photo for level', this.currentLevel);
-        
-        // Hide placeholder, show photo
-        const photoPlaceholder = document.querySelector('.photo-placeholder');
-        const photoReveal = document.querySelector('.photo-reveal');
-        
-        if (photoPlaceholder) photoPlaceholder.style.display = 'none';
-        if (photoReveal) photoReveal.style.display = 'block';
-        
-        // Load the actual photo
-        this.loadLevelPhoto(this.currentLevel);
-        
-        // Play completion sound
-        this.playSound('level-complete');
-    }
-
-    completeLevel() {
-        if (!this.canCompleteLevel()) return;
-        
-        this.completedLevels.add(this.currentLevel);
-        this.gameProgress.completedLevels = Array.from(this.completedLevels);
-        this.saveProgress();
-        
-        this.playSound('complete');
-        
-        // Check if all levels completed
-        if (this.completedLevels.size === Object.keys(this.levelData).length) {
-            setTimeout(() => {
-                this.showScreen('victory-screen');
-            }, 1500);
-        } else {
-            // Return to world map
-            setTimeout(() => {
-                this.showScreen('world-map');
-            }, 1500);
-        }
-        
-        // Visual feedback
-        const completeBtn = document.getElementById('complete-level');
-        completeBtn.textContent = 'Level Complete!';
-        completeBtn.style.background = 'linear-gradient(45deg, #ffd700, #ffed4a)';
-        completeBtn.style.color = '#000000';
-    }
-
-    canCompleteLevel() {
-        // Now only requires Mario game completion (no story needed)
-        const photoReveal = document.getElementById('photo-reveal');
-        return photoReveal.style.display === 'block';
-    }
-
-    updateLevelProgress() {
-        const photoReveal = document.getElementById('photo-reveal');
-        
-        let progress = 0;
-        
-        // Mario game completed: 100%
-        if (photoReveal.style.display === 'block') {
-            progress = 100;
-        }
-        
-        // Update progress bar
-        document.getElementById('level-progress-fill').style.width = progress + '%';
-        document.getElementById('progress-text').textContent = progress + '%';
-        
-        // Enable/disable complete button
-        const completeBtn = document.getElementById('complete-level');
-        if (completeBtn) {
-            completeBtn.disabled = progress < 100;
-        }
     }
 
     // ===== WORLD MAP =====
@@ -532,15 +1068,29 @@ class SuperDadWorld {
     }
 
     toggleMusic() {
+        const musicBtn = document.getElementById('music-toggle');
+        
         if (this.musicPlaying) {
             this.backgroundMusic.pause();
             this.musicPlaying = false;
-            document.getElementById('music-toggle').textContent = '🔇';
+            musicBtn.textContent = '🔇';
+            musicBtn.classList.remove('playing');
+            musicBtn.title = 'Music Off - Click to Enable';
+            this.showNotification('🔇 Music disabled', 'info', 1500);
         } else {
             this.backgroundMusic.play().catch(e => console.log('Audio play failed:', e));
             this.musicPlaying = true;
-            document.getElementById('music-toggle').textContent = '🎵';
+            musicBtn.textContent = '🎵';
+            musicBtn.classList.add('playing');
+            musicBtn.title = 'Music On - Click to Mute';
+            this.showNotification('🎵 Music enabled!', 'success', 1500);
         }
+        
+        // Add click effect
+        musicBtn.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+            musicBtn.style.transform = '';
+        }, 150);
     }
 
     playSound(soundType) {
@@ -675,6 +1225,16 @@ class SuperDadWorld {
             7: 'Late Teens (18-19)'
         };
 
+        const photoDescriptions = {
+            1: 'The sweetest beginning - where our incredible journey started ❤️',
+            2: 'First steps, first words, first adventures together 👶',
+            3: 'School days and growing dreams with Dad by my side 🎒',
+            4: 'Learning, laughing, and navigating new challenges 📚',
+            5: 'Finding my way with Dad\'s wisdom guiding me ⚡',
+            6: 'Growing stronger and more independent every day 🏆',
+            7: 'Ready for the world, thanks to everything Dad taught me 👑'
+        };
+
         galleryGrid.innerHTML = '';
 
         // Only show completed levels
@@ -685,28 +1245,98 @@ class SuperDadWorld {
                 
                 const filename = photoFilenames[level];
                 const folderName = this.levelData[level].folder;
+                const levelIcon = this.levelData[level].icon;
                 
                 photoItem.innerHTML = `
-                    <img src="assets/images/${folderName}/${filename}" 
-                         alt="${levelTitles[level]}" 
-                         class="gallery-photo"
-                         onerror="this.src='assets/images/placeholder.jpg'">
+                    <div class="photo-wrapper">
+                        <img src="assets/images/${folderName}/${filename}" 
+                             alt="${levelTitles[level]}" 
+                             class="gallery-photo"
+                             onerror="this.src='assets/images/placeholder.jpg'"
+                             loading="lazy">
+                        <div class="photo-overlay">
+                            <span class="photo-icon">${levelIcon}</span>
+                            <p class="photo-description">${photoDescriptions[level]}</p>
+                        </div>
+                    </div>
                     <h3 class="gallery-photo-title">${levelTitles[level]}</h3>
                 `;
+                
+                // Add click effect for photos
+                photoItem.addEventListener('click', () => {
+                    this.showPhotoModal(level, filename, folderName, levelTitles[level], photoDescriptions[level]);
+                });
                 
                 galleryGrid.appendChild(photoItem);
             }
         }
 
-        // If no photos yet, show message
+        // If no photos yet, show beautiful empty message
         if (this.completedLevels.size === 0) {
             galleryGrid.innerHTML = `
                 <div class="gallery-empty">
-                    <h3>No Photos Yet!</h3>
-                    <p>Complete levels to unlock photos in your gallery.</p>
+                    <div class="empty-icon">📸</div>
+                    <h3>Your Memory Gallery Awaits!</h3>
+                    <p>Complete levels to unlock precious photos and memories from your journey with Dad.</p>
+                    <div class="empty-progress">
+                        <div class="progress-dots">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <p>Start your adventure to collect memories!</p>
+                    </div>
                 </div>
             `;
         }
+    }
+
+    showPhotoModal(level, filename, folderName, title, description) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'photo-modal';
+        modal.innerHTML = `
+            <div class="photo-modal-content">
+                <button class="photo-modal-close">&times;</button>
+                <img src="assets/images/${folderName}/${filename}" alt="${title}" class="modal-photo">
+                <div class="modal-info">
+                    <h2>${title}</h2>
+                    <p>${description}</p>
+                    <div class="modal-actions">
+                        <button class="modal-btn download-btn" onclick="window.open('assets/images/${folderName}/${filename}', '_blank')">
+                            💾 Save Photo
+                        </button>
+                        <button class="modal-btn share-btn" onclick="this.sharePhoto('${title}', '${description}')">
+                            📤 Share Memory
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add to page
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.classList.contains('photo-modal-close')) {
+                this.closePhotoModal(modal);
+            }
+        });
+
+        // Animate in
+        requestAnimationFrame(() => {
+            modal.classList.add('active');
+        });
+    }
+
+    closePhotoModal(modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
+            }
+        }, 300);
     }
 
     // ===== RESET FUNCTIONALITY =====
