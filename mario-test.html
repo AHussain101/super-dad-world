@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario Mini-Game Test</title>
+    <style>
+        body {
+            background: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            margin: 20px auto;
+            display: block;
+        }
+        .instructions {
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+        .result {
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            display: none;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🍄 Mario Mini-Game Test</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p><strong>Goal:</strong> Collect all coins, then reach the flag!</p>
+        <p><strong>Controls:</strong></p>
+        <ul style="text-align: left; display: inline-block;">
+            <li>Arrow keys or WASD to move</li>
+            <li>Space bar to jump</li>
+            <li>Touch controls: Left side = left, Right side = right, Center = jump</li>
+        </ul>
+    </div>
+    
+    <canvas id="mario-canvas" width="500" height="350"></canvas>
+    
+    <div>
+        <button onclick="resetGame()">Reset Game</button>
+        <button onclick="testCompletion()">Test Completion</button>
+    </div>
+    
+    <div id="completion-result" class="result">
+        <h2>🏆 Game Completed!</h2>
+        <p>Congratulations! You've successfully completed the mini-game!</p>
+        <p>In the real game, this would unlock a photo and memory message.</p>
+    </div>
+
+    <script src="assets/js/mario-minigame.js"></script>
+    <script>
+        let marioGame;
+        
+        function initGame() {
+            console.log('Initializing test game...');
+            marioGame = new MarioMiniGame('mario-canvas', 1);
+            
+            marioGame.setOnComplete(() => {
+                console.log('Game completed!');
+                document.getElementById('completion-result').style.display = 'block';
+            });
+        }
+        
+        function resetGame() {
+            if (marioGame) {
+                marioGame.reset();
+                document.getElementById('completion-result').style.display = 'none';
+            }
+        }
+        
+        function testCompletion() {
+            if (marioGame) {
+                // Force completion for testing
+                marioGame.coinsCollected = marioGame.coinsNeeded;
+                marioGame.mario.x = marioGame.goal.x;
+                marioGame.mario.y = marioGame.goal.y;
+                marioGame.completeGame();
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initGame, 100);
+        });
+    </script>
+</body>
+</html> 

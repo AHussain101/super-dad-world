@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Dad World - A Father's Day Journey</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+        <div class="title-container">
+            <h1 class="game-title">SUPER DAD WORLD</h1>
+            <p class="subtitle">A Father's Day Journey Through Time</p>
+            <button id="start-game" class="mario-btn">Press Start</button>
+        </div>
+        <div class="mario-character">🍄</div>
+    </div>
+
+    <!-- Character Selection Screen -->
+    <div id="character-select" class="screen">
+        <div class="character-select-container">
+            <h1 class="select-title">Choose Your Character</h1>
+            <p class="select-subtitle">Pick your hero for this adventure!</p>
+            
+            <div class="character-grid">
+                <div class="character-option" data-character="mario">
+                    <div class="character-sprite mario-sprite">
+                        <canvas id="mario-preview" width="64" height="64"></canvas>
+                    </div>
+                    <h3>Mario</h3>
+                    <p>The classic hero</p>
+                    <div class="character-stats">
+                        <span>⭐ Balanced</span>
+                        <span>🏃 Normal Speed</span>
+                        <span>🦘 Good Jump</span>
+                    </div>
+                </div>
+                
+                <div class="character-option" data-character="luigi">
+                    <div class="character-sprite luigi-sprite">
+                        <canvas id="luigi-preview" width="64" height="64"></canvas>
+                    </div>
+                    <h3>Luigi</h3>
+                    <p>The green machine</p>
+                    <div class="character-stats">
+                        <span>⭐ High Jump</span>
+                        <span>🏃 Slower Speed</span>
+                        <span>🦘 Super Jump</span>
+                    </div>
+                </div>
+                
+                <div class="character-option" data-character="donkey">
+                    <div class="character-sprite donkey-sprite">
+                        <canvas id="donkey-preview" width="64" height="64"></canvas>
+                    </div>
+                    <h3>Donkey Kong</h3>
+                    <p>The powerhouse</p>
+                    <div class="character-stats">
+                        <span>⭐ Strong</span>
+                        <span>🏃 Fast Speed</span>
+                        <span>🦘 Heavy Jump</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="character-actions">
+                <button id="back-to-start" class="mario-btn secondary">← Back</button>
+                <button id="confirm-character" class="mario-btn" disabled>Select Character</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- World Map Screen -->
+    <div id="world-map" class="screen">
+        <div class="hud">
+            <div class="score">Lives Shared: <span id="memories-collected">0</span>/7</div>
+            <div class="music-controls">
+                <button id="music-toggle" class="music-btn">🎵</button>
+                <span class="now-playing">Now Playing: Hey You - Pink Floyd</span>
+            </div>
+        </div>
+        
+        <div class="world-container">
+            <h2 class="world-title">Choose Your Adventure</h2>
+            <div class="world-grid">
+                <!-- Level 1: Baby Years -->
+                <div class="world-level" data-level="1">
+                    <div class="level-icon">👶</div>
+                    <div class="level-info">
+                        <h3>World 1-1</h3>
+                        <p>Baby Years (0-2)</p>
+                        <span class="level-subtitle">Tiny Adventurer</span>
+                    </div>
+                    <div class="level-status unlocked">✨</div>
+                </div>
+
+                <!-- Level 2: Early Childhood -->
+                <div class="world-level" data-level="2">
+                    <div class="level-icon">🧒</div>
+                    <div class="level-info">
+                        <h3>World 1-2</h3>
+                        <p>Early Childhood (3-5)</p>
+                        <span class="level-subtitle">First Steps Hero</span>
+                    </div>
+                    <div class="level-status locked">🔒</div>
+                </div>
+
+                <!-- Level 3: Elementary Days -->
+                <div class="world-level" data-level="3">
+                    <div class="level-icon">🎒</div>
+                    <div class="level-info">
+                        <h3>World 2-1</h3>
+                        <p>Elementary Days (6-8)</p>
+                        <span class="level-subtitle">School Zone Explorer</span>
+                    </div>
+                    <div class="level-status locked">🔒</div>
+                </div>
+
+                <!-- Level 4: Middle School -->
+                <div class="world-level" data-level="4">
+                    <div class="level-icon">📚</div>
+                    <div class="level-info">
+                        <h3>World 2-2</h3>
+                        <p>Middle School (9-11)</p>
+                        <span class="level-subtitle">Growing Up Quest</span>
+                    </div>
+                    <div class="level-status locked">🔒</div>
+                </div>
+
+                <!-- Level 5: Early Teens -->
+                <div class="world-level" data-level="5">
+                    <div class="level-icon">⚡</div>
+                    <div class="level-info">
+                        <h3>World 3-1</h3>
+                        <p>Early Teens (12-14)</p>
+                        <span class="level-subtitle">Teenage Warrior</span>
+                    </div>
+                    <div class="level-status locked">🔒</div>
+                </div>
+
+                <!-- Level 6: Mid Teens -->
+                <div class="world-level" data-level="6">
+                    <div class="level-icon">🏆</div>
+                    <div class="level-info">
+                        <h3>World 3-2</h3>
+                        <p>Mid Teens (15-17)</p>
+                        <span class="level-subtitle">Level Up Champion</span>
+                    </div>
+                    <div class="level-status locked">🔒</div>
+                </div>
+
+                <!-- Level 7: Late Teens -->
+                <div class="world-level" data-level="7">
+                    <div class="level-icon">👑</div>
+                    <div class="level-info">
+                        <h3>World 4-1</h3>
+                        <p>Late Teens (18-19)</p>
+                        <span class="level-subtitle">Final Boss: Adulthood</span>
+                    </div>
+                    <div class="level-status locked">🔒</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Level Screen Template -->
+    <div id="level-screen" class="screen">
+        <div class="level-hud">
+            <button id="back-to-world" class="back-btn">← World Map</button>
+            <div class="level-title-display">
+                <h2 id="current-level-title">World 1-1: Baby Years</h2>
+            </div>
+        </div>
+
+        <div class="level-content">
+            <!-- Mario Mini-Game Section -->
+            <div class="mario-game-section">
+                <div class="game-container">
+                    <canvas id="mario-canvas" width="800" height="500"></canvas>
+                    <div class="game-instructions">
+                        <p>🎮 Complete the Mario challenge to unlock your memory!</p>
+                        <p><strong>Controls:</strong> Arrow keys or WASD to move, Space to jump</p>
+                        <p><strong>Goal:</strong> Collect all coins, then reach the flag!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Photo reveal section (right side) -->
+            <div class="photo-reveal-section">
+                <div class="photo-reveal" id="photo-reveal" style="display: none;">
+                    <div class="photo-frame">
+                        <img id="level-photo" src="" alt="Memory Photo">
+                    </div>
+                    <div class="level-actions">
+                        <button id="complete-level" class="mario-btn complete-btn">Complete Level</button>
+                    </div>
+                </div>
+                
+                <!-- Default message when photo not revealed -->
+                <div class="photo-placeholder" id="photo-placeholder">
+                    <div class="placeholder-content">
+                        <div class="level-icon-display" id="level-icon-display">🍄</div>
+                        <h3>Complete the Challenge!</h3>
+                        <p>Beat the Mario mini-game to unlock a special memory and photo from this stage of your life with Dad.</p>
+                        <div class="challenge-hint">
+                            <p><strong>Challenge:</strong> <span id="challenge-description">Collect all coins and reach the flag!</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level Progress -->
+            <div class="level-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="level-progress-fill"></div>
+                </div>
+                <p class="progress-text">Memory Progress: <span id="progress-text">0%</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Victory Screen -->
+    <div id="victory-screen" class="screen">
+        <div class="victory-container">
+            <h1 class="victory-title">CONGRATULATIONS!</h1>
+            <p class="victory-subtitle">You've completed your journey through Super Dad World!</p>
+            
+            <div class="final-message">
+                <h2>Thank You, Dad!</h2>
+                <div class="final-stats">
+                    <p>🏆 Memories Collected: <span id="final-memories">7</span>/7</p>
+                    <p>❤️ Chapters Completed: <span id="final-chapters">7</span>/7</p>
+                    <p>⭐ Love Level: MAXIMUM</p>
+                </div>
+            </div>
+
+            <div class="photo-montage">
+                <h3>Your Journey Through Time</h3>
+                <div class="montage-grid" id="final-montage">
+                    <!-- Photos will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="final-actions">
+                <button id="view-gallery" class="mario-btn">📸 View Photo Gallery</button>
+                <button id="play-again" class="mario-btn">Play Again</button>
+                <button id="share-journey" class="mario-btn">Share Journey</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Gallery Screen -->
+    <div id="photo-gallery-screen" class="screen">
+        <div class="gallery-container">
+            <div class="gallery-header">
+                <button id="back-from-gallery" class="back-btn">← Back to Victory</button>
+                <h1 class="gallery-title">📸 Dad & Me Photo Gallery</h1>
+                <p class="gallery-subtitle">A lifetime of memories together</p>
+            </div>
+            
+            <div class="gallery-grid" id="gallery-photos">
+                <!-- Photos will be populated by JavaScript -->
+            </div>
+            
+            <div class="gallery-actions">
+                <button id="download-photos" class="mario-btn">💾 Save All Photos</button>
+                <button id="print-gallery" class="mario-btn">🖨️ Print Gallery</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>📸 Take a Photo First!</h2>
+            <p>Before resetting your progress, consider taking a screenshot or photo of your completed journey!</p>
+            <div class="modal-actions">
+                <button id="cancel-reset" class="mario-btn">Cancel</button>
+                <button id="confirm-reset" class="mario-btn reset-btn">Reset Anyway</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="background-music" loop>
+        <source src="assets/audio/hey-you-instrumental.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <audio id="coin-sound" preload="auto">
+        <source src="assets/audio/coin.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="complete-sound" preload="auto">
+        <source src="assets/audio/level-complete.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="assets/js/mario-minigame.js"></script>
+    <script src="assets/js/game.js"></script>
+</body>
+</html> 

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Screen Transitions</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: none;
+            z-index: 1;
+        }
+        
+        .screen.active {
+            display: block;
+            z-index: 10;
+        }
+        
+        #start-screen {
+            background: linear-gradient(45deg, #000, #1a1a2e, #16213e);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        #start-screen.active {
+            display: flex;
+        }
+        
+        #world-map {
+            background: linear-gradient(135deg, #000, #1a1a2e);
+            padding: 2rem;
+        }
+        
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 1rem;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .debug {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border: 1px solid #007bff;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug">
+        Current Screen: <span id="current-screen">start-screen</span>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+        <h1>SUPER DAD WORLD</h1>
+        <p>A Father's Day Journey Through Time</p>
+        <button onclick="showWorldMap()">Press Start</button>
+    </div>
+
+    <!-- World Map Screen -->
+    <div id="world-map" class="screen">
+        <h2>Choose Your Adventure</h2>
+        <p>This is the world map screen</p>
+        <button onclick="showStartScreen()">Back to Start</button>
+        <button onclick="testTransition()">Test Rapid Transition</button>
+    </div>
+
+    <script>
+        function showScreen(screenId) {
+            console.log(`Switching to: ${screenId}`);
+            
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+                screen.style.display = 'none';
+                screen.style.zIndex = '1';
+            });
+            
+            // Force reflow
+            document.body.offsetHeight;
+            
+            // Show target screen
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                if (screenId === 'start-screen') {
+                    targetScreen.style.display = 'flex';
+                } else {
+                    targetScreen.style.display = 'block';
+                }
+                targetScreen.style.zIndex = '10';
+                targetScreen.classList.add('active');
+                
+                document.getElementById('current-screen').textContent = screenId;
+            }
+        }
+        
+        function showStartScreen() {
+            showScreen('start-screen');
+        }
+        
+        function showWorldMap() {
+            showScreen('world-map');
+        }
+        
+        function testTransition() {
+            showStartScreen();
+            setTimeout(() => showWorldMap(), 1000);
+        }
+        
+        console.log('Test page loaded');
+    </script>
+</body>
+</html> 
