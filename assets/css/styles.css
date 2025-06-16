@@ -1933,5 +1933,440 @@ body {
     to {
         text-shadow: 0 0 30px rgba(255, 217, 61, 0.8), 0 0 40px rgba(255, 107, 107, 0.3);
     }
+}
+
+/* ===== MOBILE ENHANCEMENTS ===== */
+
+/* Virtual Touch Controls for Mobile */
+.mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.mobile-controls.active {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px;
+    pointer-events: all;
+}
+
+.mobile-dpad {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mobile-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #4a4a6a, #2a2a3a);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    touch-action: manipulation;
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.1s ease;
+}
+
+.mobile-btn:active {
+    transform: scale(0.95);
+    background: linear-gradient(145deg, #5a5a7a, #3a3a4a);
+    box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.mobile-btn.jump {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(145deg, #ff6b6b, #e55555);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.mobile-btn.jump:active {
+    background: linear-gradient(145deg, #ff7b7b, #f56565);
+}
+
+/* Mobile Layout Improvements */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        overflow-x: hidden;
+    }
+
+    /* Start Screen Mobile */
+    .game-title {
+        font-size: 2rem !important;
+        line-height: 1.2;
+    }
+
+    .subtitle {
+        font-size: 0.9rem !important;
+    }
+
+    .dedication {
+        margin: 1rem 0 !important;
+        padding: 0.8rem !important;
+    }
+
+    .dedication-text {
+        font-size: 0.9rem !important;
+    }
+
+    .dedication-signature {
+        font-size: 0.8rem !important;
+    }
+
+    .start-hint p {
+        font-size: 0.8rem !important;
+    }
+
+    .mario-character {
+        font-size: 3rem !important;
+    }
+
+    /* World Map Mobile */
+    .world-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        padding: 0 1rem;
+    }
+
+    .world-level {
+        padding: 1rem !important;
+        margin: 0 !important;
+    }
+
+    .level-icon {
+        font-size: 2rem !important;
+    }
+
+    .level-info h3 {
+        font-size: 1rem !important;
+    }
+
+    .level-info p {
+        font-size: 0.8rem !important;
+    }
+
+    .level-subtitle {
+        font-size: 0.7rem !important;
+    }
+
+    /* HUD Mobile */
+    .hud {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        padding: 0.5rem !important;
+    }
+
+    .music-controls {
+        order: -1;
+    }
+
+    .now-playing {
+        font-size: 0.7rem !important;
+    }
+
+    /* Level Screen Mobile */
+    .level-content {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+
+    .mario-game-section,
+    .photo-reveal-section {
+        flex: none !important;
+        width: 100% !important;
+    }
+
+    .game-container {
+        padding: 0.5rem !important;
+    }
+
+    #mario-canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 8/5;
+    }
+
+    .game-instructions {
+        padding: 0.8rem !important;
+    }
+
+    .game-instructions p {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Photo Section Mobile */
+    .photo-reveal-section {
+        min-height: auto !important;
+    }
+
+    .placeholder-content h3 {
+        font-size: 1.2rem !important;
+    }
+
+    .placeholder-content p {
+        font-size: 0.9rem !important;
+    }
+
+    .level-icon-display {
+        font-size: 2.5rem !important;
+    }
+
+    .photo-reveal #level-photo {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Buttons Mobile */
+    .mario-btn {
+        padding: 0.8rem 1.5rem !important;
+        font-size: 0.8rem !important;
+        min-width: auto !important;
+    }
+
+    .level-actions {
+        flex-direction: column !important;
+        gap: 0.8rem !important;
+    }
+
+    /* Victory Screen Mobile */
+    .victory-container {
+        padding: 1rem !important;
+    }
+
+    .victory-title {
+        font-size: 2rem !important;
+    }
+
+    .victory-subtitle {
+        font-size: 1rem !important;
+    }
+
+    .personal-message {
+        margin: 1rem 0 !important;
+        padding: 1rem !important;
+    }
+
+    .love-note {
+        font-size: 0.9rem !important;
+        padding: 0.8rem !important;
+    }
+
+    .signature {
+        font-size: 1rem !important;
+    }
+
+    .final-actions {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+
+    /* Gallery Mobile */
+    .gallery-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+        padding: 0 1rem;
+    }
+
+    .gallery-photo {
+        max-width: 100% !important;
+        height: 250px !important;
+    }
+
+    .gallery-actions {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+
+    /* Modal Mobile */
+    .photo-modal-content {
+        margin: 1rem !important;
+        padding: 1rem !important;
+        max-width: calc(100vw - 2rem) !important;
+        max-height: calc(100vh - 2rem) !important;
+    }
+
+    .modal-photo {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    .modal-actions {
+        flex-direction: column !important;
+        gap: 0.8rem !important;
+    }
+
+    /* Character Select Mobile */
+    .character-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .character-option {
+        padding: 1rem !important;
+    }
+
+    .character-actions {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small mobile devices */
+    .game-title {
+        font-size: 1.5rem !important;
+    }
+
+    .mario-btn {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .world-level {
+        padding: 0.8rem !important;
+    }
+
+    .level-icon {
+        font-size: 1.8rem !important;
+    }
+
+    .victory-title {
+        font-size: 1.5rem !important;
+    }
+
+    .love-note {
+        font-size: 0.8rem !important;
+    }
+
+    .gallery-photo {
+        height: 200px !important;
+    }
+
+    /* Mobile controls for very small screens */
+    .mobile-btn {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.2rem !important;
+    }
+
+    .mobile-btn.jump {
+        width: 65px !important;
+        height: 65px !important;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* This targets touch devices */
+    .mario-btn {
+        min-height: 44px; /* Apple's recommended touch target size */
+        padding: 1rem 1.5rem;
+    }
+
+    .world-level {
+        min-height: 60px;
+        padding: 1rem;
+    }
+
+    .mobile-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .world-level:hover,
+    .mario-btn:hover,
+    .gallery-photo-item:hover {
+        transform: none;
+    }
+
+    /* Add active states for touch feedback */
+    .world-level:active {
+        transform: scale(0.98);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .mario-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .level-content {
+        flex-direction: row !important;
+    }
+
+    .mario-game-section {
+        flex: 2 !important;
+    }
+
+    .photo-reveal-section {
+        flex: 1 !important;
+    }
+
+    #mario-canvas {
+        height: 60vh !important;
+    }
+
+    .mobile-controls {
+        bottom: 10px !important;
+    }
+
+    .mobile-btn {
+        width: 45px !important;
+        height: 45px !important;
+    }
+
+    .mobile-btn.jump {
+        width: 60px !important;
+        height: 60px !important;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    #mario-canvas {
+        image-rendering: pixelated;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Accessibility improvements for mobile */
+@media (prefers-reduced-motion: reduce) {
+    .mario-character,
+    .level-icon,
+    .gallery-photo-item,
+    .mobile-btn {
+        animation: none !important;
+    }
+}
+
+/* Dark mode support for mobile */
+@media (prefers-color-scheme: dark) {
+    .mobile-btn {
+        background: linear-gradient(145deg, #3a3a4a, #2a2a3a);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
 } 
 } 

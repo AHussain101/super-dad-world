@@ -382,46 +382,110 @@ function preloadCriticalResources() {
 
 // Enhanced mobile detection and optimization
 function setupMobileOptimizations() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Enhanced mobile detection
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     ('ontouchstart' in window) || 
+                     (navigator.maxTouchPoints > 0);
     
     if (isMobile) {
+        console.log('🍄 Mobile device detected, applying comprehensive optimizations...');
+        
         document.body.classList.add('mobile-device');
         
-        // Disable context menu on mobile
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        
-        // Prevent zoom on input focus
-        const viewport = document.querySelector('meta[name=viewport]');
-        if (viewport) {
-            viewport.setAttribute('content', 
-                'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'
-            );
+        // Enhanced viewport settings
+        let viewport = document.querySelector('meta[name=viewport]');
+        if (!viewport) {
+            viewport = document.createElement('meta');
+            viewport.name = 'viewport';
+            document.head.appendChild(viewport);
         }
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
         
-        // Add mobile-specific CSS
+        // Prevent pull-to-refresh and overscroll
+        document.body.style.overscrollBehavior = 'none';
+        document.documentElement.style.overscrollBehavior = 'none';
+        
+        // Prevent iOS Safari bounce and context menu
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.screen') || e.target.tagName === 'CANVAS') {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('.mobile-btn') || e.target.tagName === 'CANVAS' || e.target.closest('.mario-btn')) {
+                e.preventDefault();
+            }
+        });
+        
+        // Optimize touch events
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        
+        // Add mobile-specific CSS enhancements
         const mobileStyle = document.createElement('style');
         mobileStyle.textContent = `
+            .mobile-device {
+                -webkit-text-size-adjust: 100%;
+                -webkit-tap-highlight-color: transparent;
+                -webkit-touch-callout: none;
+            }
+            
+            .mobile-device * {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            
             .mobile-device .mario-btn {
                 padding: 1.2rem 2rem;
                 font-size: 0.9rem;
                 min-height: 44px; /* Touch target size */
+                touch-action: manipulation;
             }
             
             .mobile-device .world-level {
                 min-height: 100px;
                 padding: 1.5rem;
+                touch-action: manipulation;
             }
             
             .mobile-device #mario-canvas {
                 max-width: 100%;
                 height: auto;
                 border-radius: 15px;
+                touch-action: none;
+            }
+            
+            .mobile-device .mobile-controls {
+                display: flex !important;
+            }
+            
+            /* Prevent text selection on game elements */
+            .mobile-device .game-title,
+            .mobile-device .level-icon,
+            .mobile-device .mobile-btn {
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            
+            /* Optimize for notched devices */
+            @supports (padding: max(0px)) {
+                .mobile-device .mobile-controls {
+                    padding-left: max(20px, env(safe-area-inset-left));
+                    padding-right: max(20px, env(safe-area-inset-right));
+                    padding-bottom: max(20px, env(safe-area-inset-bottom));
+                }
             }
         `;
         document.head.appendChild(mobileStyle);
         
-        console.log('🍄 Mobile optimizations applied');
+        // Set mobile mode flag for game
+        window.mobileMode = true;
+        
+        console.log('🍄 Comprehensive mobile optimizations applied');
     }
+    
+    return isMobile;
 }
 
 // Main initialization sequence

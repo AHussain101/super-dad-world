@@ -303,16 +303,17 @@ class MarioMiniGame {
         document.addEventListener('keydown', this.boundKeyDown);
         document.addEventListener('keyup', this.boundKeyUp);
         
-        // Touch controls for mobile
+        // Enhanced touch controls for mobile
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             const touch = e.touches[0];
             const rect = this.canvas.getBoundingClientRect();
             const x = touch.clientX - rect.left;
+            const canvasWidth = rect.width;
             
-            if (x < this.canvas.width / 3) {
+            if (x < canvasWidth / 3) {
                 this.keys['ArrowLeft'] = true;
-            } else if (x > this.canvas.width * 2/3) {
+            } else if (x > canvasWidth * 2/3) {
                 this.keys['ArrowRight'] = true;
             } else {
                 this.keys[' '] = true; // Jump
@@ -325,6 +326,16 @@ class MarioMiniGame {
             this.keys['ArrowRight'] = false;
             this.keys[' '] = false;
         });
+
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent scrolling
+        });
+
+        // Setup virtual mobile controls
+        this.setupMobileControls();
+        
+        // Show mobile instructions if needed
+        this.showMobileInstructions();
         
         // Canvas click to start
         this.canvas.addEventListener('click', () => {
@@ -339,6 +350,90 @@ class MarioMiniGame {
                 this.start();
             }
         }, 500);
+    }
+
+    setupMobileControls() {
+        // Show mobile controls on touch devices
+        const mobileControls = document.getElementById('mobile-controls');
+        if (mobileControls && 'ontouchstart' in window) {
+            mobileControls.classList.add('active');
+            
+            // Setup virtual button events
+            const mobileButtons = mobileControls.querySelectorAll('.mobile-btn');
+            
+            mobileButtons.forEach(btn => {
+                const key = btn.dataset.key;
+                
+                // Touch start
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.keys[key] = true;
+                    btn.style.transform = 'scale(0.9)';
+                });
+                
+                // Touch end
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.keys[key] = false;
+                    btn.style.transform = '';
+                });
+                
+                // Touch cancel (when finger moves off button)
+                btn.addEventListener('touchcancel', (e) => {
+                    e.preventDefault();
+                    this.keys[key] = false;
+                    btn.style.transform = '';
+                });
+                
+                // Prevent context menu
+                btn.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                });
+            });
+        }
+    }
+
+    showMobileInstructions() {
+        // Show mobile-specific instructions on touch devices
+        if ('ontouchstart' in window && !localStorage.getItem('mobile-instructions-shown')) {
+            const instructions = document.querySelector('.game-instructions');
+            if (instructions) {
+                const mobileInstructions = document.createElement('div');
+                mobileInstructions.className = 'mobile-instructions';
+                mobileInstructions.innerHTML = `
+                    <p><strong>📱 Mobile Controls:</strong></p>
+                    <p>• Use the virtual buttons at the bottom</p>
+                    <p>• ← → arrows to move left/right</p>
+                    <p>• 🦘 button to jump</p>
+                    <p>• Or tap the game screen: left side = move left, right side = move right, center = jump</p>
+                `;
+                mobileInstructions.style.cssText = `
+                    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+                    border: 2px solid rgba(255, 217, 61, 0.3);
+                    border-radius: 10px;
+                    padding: 1rem;
+                    margin-top: 1rem;
+                    font-size: 0.8rem;
+                `;
+                instructions.appendChild(mobileInstructions);
+                
+                // Mark as shown
+                localStorage.setItem('mobile-instructions-shown', 'true');
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    if (mobileInstructions.parentNode) {
+                        mobileInstructions.style.opacity = '0';
+                        mobileInstructions.style.transition = 'opacity 1s ease';
+                        setTimeout(() => {
+                            if (mobileInstructions.parentNode) {
+                                mobileInstructions.parentNode.removeChild(mobileInstructions);
+                            }
+                        }, 1000);
+                    }
+                }, 10000);
+            }
+        }
     }
     
     update() {
@@ -1969,6 +2064,12 @@ class MarioMiniGame {
             document.removeEventListener('keyup', this.boundKeyUp);
         }
         
+        // Hide mobile controls
+        const mobileControls = document.getElementById('mobile-controls');
+        if (mobileControls) {
+            mobileControls.classList.remove('active');
+        }
+        
         // Clear canvas
         if (this.ctx) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -1978,22 +2079,37 @@ class MarioMiniGame {
     handleResize() {
         if (!this.canvas) return;
         
-        // Maintain aspect ratio while fitting to container
+        // Enhanced mobile-friendly resize handling
         const container = this.canvas.parentElement;
         if (container) {
             const rect = container.getBoundingClientRect();
             const aspectRatio = 800 / 500;
+            const isMobile = window.mobileMode || ('ontouchstart' in window);
             
-            let newWidth = rect.width - 40; // Some padding
+            let padding = isMobile ? 20 : 40; // Less padding on mobile
+            let newWidth = rect.width - padding;
             let newHeight = newWidth / aspectRatio;
             
-            if (newHeight > rect.height - 40) {
-                newHeight = rect.height - 40;
-                newWidth = newHeight * aspectRatio;
+            // On mobile, prioritize width over height
+            if (isMobile) {
+                const maxHeight = window.innerHeight * 0.4; // Max 40% of screen height
+                if (newHeight > maxHeight) {
+                    newHeight = maxHeight;
+                    newWidth = newHeight * aspectRatio;
+                }
+            } else {
+                if (newHeight > rect.height - padding) {
+                    newHeight = rect.height - padding;
+                    newWidth = newHeight * aspectRatio;
+                }
             }
             
             this.canvas.style.width = newWidth + 'px';
             this.canvas.style.height = newHeight + 'px';
+            
+            // Ensure canvas is centered
+            this.canvas.style.margin = '0 auto';
+            this.canvas.style.display = 'block';
         }
     }
     
